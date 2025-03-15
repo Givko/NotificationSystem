@@ -1,0 +1,8 @@
+server:
+  port: 8080
+kafka:
+  notifications:
+    topic: notifications123
+    dlq-topic: notifications-dlq
+    bootstrap-servers: localhost:9092
+    group-id: notifications-group
