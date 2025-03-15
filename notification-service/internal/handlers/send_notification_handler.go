@@ -1,27 +1,35 @@
 package handlers
 
 import (
-	"github.com/Givko/NotificationSystem/notification-service/internal/config"
-	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
+	"github.com/Givko/NotificationSystem/notification-service/internal/models"
+	"github.com/Givko/NotificationSystem/notification-service/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
 type NotificationHandler struct {
-	producer kafka.Producer
-	logger   zerolog.Logger
+	service services.NotificationService
+	logger  zerolog.Logger
 }
 
-func NewNotificationHandler(producer kafka.Producer, logger zerolog.Logger) *NotificationHandler {
+func NewNotificationHandler(service services.NotificationService, logger zerolog.Logger) *NotificationHandler {
 	return &NotificationHandler{
-		producer: producer,
-		logger:   logger,
+		service: service,
+		logger:  logger,
 	}
 }
 
 func (handler *NotificationHandler) CreateNotificationHandler(c *gin.Context) {
-	config := config.GetConfig()
-	err := handler.producer.Produce(c, config.NotificationTopic, []byte("key"), []byte("value"))
+	var notification models.Notification
+
+	// Bind JSON body to createDto
+	if err := c.ShouldBindJSON(&notification); err != nil {
+		handler.logger.Error().Err(err).Msg("Failed to bind JSON body")
+		c.JSON(400, gin.H{"error": "Failed to bind JSON body"})
+		return
+	}
+
+	err := handler.service.SendNotification(notification)
 	if err != nil {
 		handler.logger.Error().Err(err).Msg("Failed to produce message")
 		c.JSON(500, gin.H{"error": "Failed to produce message"})
