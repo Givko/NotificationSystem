@@ -16,6 +16,8 @@ type Producer interface {
 	Close()
 }
 
+var _ Producer = (*kafkaProducer)(nil)
+
 // Config holds configuration options for the Kafka producer.
 type Config struct {
 	BootstrapServers string // Comma-separated list of brokers: "broker1:9092,broker2:9092"

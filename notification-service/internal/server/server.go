@@ -6,6 +6,7 @@ import (
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
 	"github.com/Givko/NotificationSystem/notification-service/internal/handlers"
 	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
+	"github.com/Givko/NotificationSystem/notification-service/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
@@ -44,9 +45,10 @@ func InitServer() {
 		panic(err)
 	}
 
-	notificaitonHandler := handlers.NewNotificationHandler(producer, zl)
-	notificationsGroup := server.Group("/api/v1/notifications")
-	notificationsGroup.POST("/", notificaitonHandler.CreateNotificationHandler)
+	notificationService := services.NewNotificationService(producer, zl)
+	notificaitonHandler := handlers.NewNotificationHandler(notificationService, zl)
+	notificationsGroup := server.Group("/api/v1")
+	notificationsGroup.POST("/notifications", notificaitonHandler.CreateNotificationHandler)
 
 	server.Run(":" + configuration.ServerPort)
 }
