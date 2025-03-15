@@ -1,0 +1,2 @@
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"localhost:9092","time":1742070703497,"message":"Kafka producer created successfully"}
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"localhost:9092","time":1742070878282,"message":"Kafka producer created successfully"}
