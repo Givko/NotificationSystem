@@ -1,39 +1,23 @@
 # Notification System
 
-This repository contains a **notification orchestration service** designed to reliably send notifications (email, SMS, Slack, etc.) via multiple channels. The system is designed for **horizontal scalability**, **at-least-once delivery**, and **ease of extension** to add new notification channels or features like rate limiting and authentication.
-
----
-
-## Table of Contents
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Key Components](#key-components)
-4. [Workflow](#workflow)
-5. [Existing Features](#existing-features)
-6. [Planned or Extensible Features](#planned-or-extensible-features)
-7. [Local Development and Deployment](#local-development-and-deployment)
-8. [Configuration](#configuration)
-9. [Observability and Monitoring](#observability-and-monitoring)
-10. [Contributing](#contributing)
-11. [License](#license)
-
----
+A scalable, reliable notification service built with Go that supports multiple notification channels and guarantees at-least-once delivery.
 
 ## Overview
 
-The **Notification System** provides a central API for multiple microservices (or external clients) to send notifications to end users. It decouples the notification sending logic from the business logic of individual services, making it easier to manage, monitor, and scale.
+This notification system provides a centralized service for sending notifications via multiple channels (email, SMS, Slack) with easy extensibility for future channels. The system is designed with horizontal scalability, reliability, and observability in mind.
 
-**Key goals:**
-- **Scalability:** The system can scale horizontally to handle high traffic.
-- **Reliability:** Notifications have an at-least-once delivery guarantee, with a built-in retry mechanism.
-- **Extensibility:** Easily add new channels (e.g., Slack, SMS, Email, Push) or switch out third-party providers.
-- **Maintainability:** Clear separation of concerns (API, service layer, producer/consumer model).
+![Notification System Architecture](https://example.com/notification-system-architecture.png)
 
----
+## Key Features
 
-## Architecture
+- **Multi-channel Support**: Send notifications via email, SMS, and Slack
+- **Horizontal Scalability**: Stateless design allows for easy scaling
+- **At-least-once Delivery**: Guaranteed delivery through retry mechanisms and dead letter queues
+- **Extensibility**: Easily add new notification channels
+- **Observability**: Comprehensive metrics and logging for system monitoring
+- **Graceful Shutdown**: Proper handling of system signals for clean termination
 
-Below is a high-level conceptual diagram illustrating how the system is structured:
+## System Architecture
 
                 +---------------------+
                 |   Service 1 to N   |
@@ -62,121 +46,259 @@ Below is a high-level conceptual diagram illustrating how the system is structur
    |   Third-Party Services (Slack, Email, SMS, etc.)|
    +-------------------------------------------------+
 
+### Components
 
-### Key Architecture Points
+#### Notification Service API
 
-1. **Notification Service (Orchestrator)**
-   - Exposes an HTTP API for incoming notification requests.
-   - Performs basic validation and passes messages to Kafka topics.
-2. **Message Queues (Kafka)**
-   - Decouples the notification service from the workers.
-   - Provides buffering and retry capabilities.
-3. **Workers**
-   - Consume messages from respective Kafka topics (Slack, Email, SMS).
-   - Send notifications to third-party services (e.g., Slack, email providers, SMS gateways).
-4. **Database and Cache (Optional/Pluggable)**
-   - Store user preferences, templates, or rate-limiting counters.
-5. **Dead-Letter Queue (DLQ)**
-   - Handles messages that fail after multiple retries.
+The notification service exposes HTTP endpoints for clients to submit notification requests. It:
+- Validates incoming requests
+- Routes notifications to appropriate Kafka topics based on channel type
+- Provides metrics for monitoring request handling
 
----
+#### Message Queue (Kafka)
 
-## Key Components
+Kafka serves as the backbone of our notification system:
+- Decouples producers from consumers
+- Enables horizontal scaling of workers
+- Provides persistence of notification messages
+- Supports retry mechanisms through topic configuration
+- Maintains order of notifications when needed
 
-1. **HTTP Server (Gin)**
-   - Receives notification requests (`/api/v1/notifications`) and forwards them to the service layer.
+#### Workers
 
-2. **Service Layer**
-   - Encapsulates business logic around notification creation, validation, and queuing.
-   - Uses the **Kafka Producer** to enqueue messages.
+Worker services consume messages from Kafka topics and deliver them to external services:
+- Each channel (email, SMS, Slack) has dedicated workers
+- Workers can be scaled independently based on channel-specific load
+- Implement channel-specific retry logic and error handling
 
-3. **Kafka Producer**
-   - Writes messages to the appropriate topic based on the notification channel.
-   - Implements retries with exponential backoff and a dead-letter queue mechanism.
+#### Dead Letter Queue
 
-4. **Configuration Manager (Viper)**
-   - Reads YAML configuration for server ports, Kafka settings, channel topics, etc.
-   - Allows hot-reloading of config changes.
+Failed notifications (after retries) are sent to a dedicated DLQ topic:
+- Preserves messages that couldn't be delivered
+- Allows for manual inspection and intervention
+- Provides metrics on delivery failures
 
-5. **Metrics & Logging**
-   - **Prometheus** metrics for HTTP request durations, etc.
-   - **zerolog** for structured logging in both development and production modes.
+### Flows
 
-6. **Workers (Separate Services)**
-   - Pull messages from channel-specific Kafka topics (e.g., `slack-worker`, `email-worker`, `sms-worker`).
-   - Interact with third-party APIs to deliver notifications.
+#### Notification Submission Flow
 
----
+1. Client submits notification via HTTP API
+2. Service validates request and identifies target channel
+3. Notification is serialized and published to channel-specific Kafka topic
+4. Successful submission returns 202 Accepted status
 
-## Workflow
+#### Notification Processing Flow
 
-1. **Incoming Request**
-   - A client (e.g., `Service 1`) sends a `POST /api/v1/notifications` request with JSON payload specifying channel, recipient, and message details.
+1. Channel-specific worker consumes notification from Kafka
+2. Worker attempts to deliver notification to external service
+3. On success, the message is acknowledged
+4. On failure, retry logic is applied
+5. After max retries, notification is sent to DLQ
 
-2. **Validation & Processing**
-   - The notification service validates the request (e.g., checks if email or phone number is well-formed).
-   - (Optional) Fetches additional data from a **cache** or **database** (e.g., user preferences, templates).
+## Implementation Details
 
-3. **Enqueue Message**
-   - A Kafka producer writes the notification event to the corresponding topic (e.g., `slack-worker`, `email-worker`, `sms-worker`).
+### Core Service
 
-4. **Workers Consume**
-   - Separate worker services consume messages from Kafka, construct the final payload, and call third-party APIs (Slack, email providers, SMS gateways).
+The notification service is implemented using the Gin framework and follows clean architecture principles:
 
-5. **Delivery**
-   - Third-party providers deliver the notifications to end users.
+- **Handlers**: Handle HTTP requests and responses
+- **Services**: Contain business logic for notification processing
+- **Infrastructure**: Provides implementation details for external systems (Kafka)
 
-6. **Retry & DLQ**
-   - If a worker fails to deliver, it retries a configurable number of times.
-   - If all retries fail, the message is sent to a **dead-letter queue (DLQ)**.
+### Reliability Features
 
----
+#### Retry Mechanism
 
-## Existing Features
+The system implements a sophisticated retry mechanism:
+- Exponential backoff for failed deliveries
+- Configurable maximum retry attempts
+- Dead letter queue for notifications that exceed retry limits
 
-- **HTTP API Endpoint** (`POST /api/v1/notifications`)
-  - Accepts JSON payloads with fields like `recipient`, `recipient_id`, `sender`, `sender_id`, `subject`, `message`, and `channel`.
-- **At-Least-Once Delivery**
-  - Achieved via Kafka and retry logic. Failed messages go to a DLQ.
-- **Horizontal Scalability**
-  - The notification service (orchestrator) can be scaled horizontally behind a load balancer.
-  - Kafka-based message queues decouple producers from consumers.
-- **Metrics & Observability**
-  - Prometheus endpoint (`/metrics`) for tracking HTTP request durations.
-  - Structured logs with `zerolog`.
-- **Graceful Shutdown**
-  - The service listens for SIGINT/SIGTERM signals and shuts down HTTP and Kafka producer gracefully.
+#### Graceful Shutdown
 
----
+The service handles termination signals properly:
+- Completes in-flight requests
+- Flushes pending Kafka messages
+- Releases resources in a controlled manner
 
-## Planned or Extensible Features
+### Observability
 
-1. **Rate Limiting**
-   - Prevents sending too many notifications to the same user.
-   - Could be implemented with a **Redis** or in-memory token bucket approach.
-2. **Authentication & Authorization**
-   - Only verified internal services or authenticated clients can call the notification API.
-   - Could be done via OAuth 2.0, JWT, or mutual TLS.
-3. **Notification Templates**
-   - Store and manage reusable message templates for consistent formatting.
-   - Allows dynamic parameters and personalization.
-4. **User Notification Settings**
-   - Respect user preferences (opt-in/opt-out) for each channel.
-   - Store in a database or cache for quick lookups.
-5. **Monitoring and Analytics**
-   - Track open rates, click rates, and bounce rates to measure notification effectiveness.
-   - Alert on high DLQ volumes or third-party service outages.
-6. **Workers**
-   - While this repository focuses on the orchestrator, worker services handle actual sending.
-   - Each worker can be scaled independently based on traffic per channel.
+#### Logging
 
----
+Structured logging using zerolog:
+- JSON format for machine parsing in production
+- Human-readable format for development
+- Configurable log levels and output destinations
 
-## Local Development and Deployment
+#### Metrics
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/YourOrg/notification-service.git
-   cd notification-service
+Prometheus metrics for system monitoring:
+- HTTP request duration
+- Success/failure rates
+- Queue depths
+- Processing latencies
 
-To be finished
+## Configuration
+
+The system uses YAML configuration with environment variable overrides:
+
+```yaml
+server:
+  port: 8080
+kafka:
+  bootstrap-servers: localhost:9092
+  required-acks: 1
+  max-retries: 3
+notifications:
+  channel-topics:
+    slack: slack-worker
+    email: email-worker
+    sms: sms-worker
+  dead-letter-topic: notifications-dlq
+```
+
+## Future Enhancements
+
+### User Notification Preferences Database
+
+A database to store user notification preferences would be implemented:
+- Store opt-in/opt-out preferences per user and channel
+- Enable notification template customization
+- Track notification history and analytics
+
+Implementation approach:
+```go
+type NotificationPreference struct {
+    UserID      string
+    Channel     string
+    OptIn       bool
+    UpdatedAt   time.Time
+}
+
+// Check user preferences before sending
+func (s *notificationService) SendNotification(notification contracts.Notification) error {
+    // Check if user has opted in for this channel
+    if !s.preferencesRepository.HasUserOptedIn(notification.RecipientID, notification.Channel) {
+        return ErrUserOptedOut
+    }
+    // Proceed with sending...
+}
+```
+
+### Rate Limiting
+
+To prevent notification fatigue and protect resources:
+- Per-user rate limits across channels
+- Global rate limits per channel type
+- Custom rate limit rules for different notification types
+
+Implementation approach using Redis:
+```go
+func (s *notificationService) SendNotification(notification contracts.Notification) error {
+    // Check rate limits before sending
+    exceeded, err := s.rateLimiter.CheckAndIncrement(notification.RecipientID, notification.Channel)
+    if err != nil {
+        return err
+    }
+    if exceeded {
+        return ErrRateLimitExceeded
+    }
+    // Proceed with sending...
+}
+```
+
+### Notification Templates
+
+A template system to standardize notification formats:
+- Store templates in a database or file system
+- Support for variables and personalization
+- Versioning of templates for tracking changes
+
+### Analytics and Event Tracking
+
+To measure effectiveness and engagement:
+- Track delivery, open, and interaction rates
+- A/B testing of notification content
+- User engagement analysis
+
+### Authentication and Authorization
+
+Enhanced security features:
+- API key authentication for service clients
+- Role-based access control for notification management
+- Audit logging for security compliance
+
+## Getting Started
+
+### Prerequisites
+
+- Go 1.22 or higher
+- Kafka cluster
+- Docker and Docker Compose (for local development)
+
+### Running Locally
+
+1. Clone the repository
+```bash
+git clone https://github.com/Givko/NotificationSystem
+cd NotificationSystem
+```
+
+2. Start Kafka with Docker Compose
+```bash
+docker-compose up -d
+```
+
+3. Run the service
+```bash
+go run cmd/notification-service/main.go
+```
+
+### Testing
+
+Execute the test suite:
+```bash
+go test ./...
+```
+
+Send a test notification:
+```bash
+curl -X POST http://localhost:8080/api/v1/notifications \
+  -H "Content-Type: application/json" \
+  -d '{
+    "recipient": "John Doe",
+    "recipient_id": "user123",
+    "sender": "Service XYZ",
+    "sender_id": "service_xyz",
+    "subject": "Important Update",
+    "message": "Your order has been shipped!",
+    "channel": "email"
+  }'
+```
+
+## Deployment
+
+The service is designed to be deployed in containerized environments:
+
+### Kubernetes Deployment
+
+Example Kubernetes manifests are provided for:
+- Deployment with horizontal pod autoscaling
+- ConfigMaps for configuration
+- Service for network exposure
+- Monitoring integration with Prometheus
+
+### Scaling Considerations
+
+- API servers can be scaled horizontally
+- Kafka partitioning enables parallel processing
+- Worker deployments can be scaled independently per channel
+- Consider regional deployments for global services
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
