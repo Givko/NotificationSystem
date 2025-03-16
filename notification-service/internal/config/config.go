@@ -40,7 +40,7 @@ func GetConfig() Config {
 func Init(logger zerolog.Logger) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../internal/config") // Adjust if your config is in a different directory
+	viper.AddConfigPath("./internal/config") // Adjust if your config is in a different directory
 
 	if err := viper.ReadInConfig(); err != nil {
 		logger.Err(err).Msg("Error reading config file")

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
 	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
@@ -32,15 +33,30 @@ func (service *notificationService) SendNotification(notification contracts.Noti
 	ctx := context.Background()
 	messageJson, err := notification.ToJSON()
 	if err != nil {
-		service.logger.Error().Err(err).Msg("Failed to marshal notification to JSON")
+		service.logger.
+			Error().
+			Err(err).
+			Msg("Failed to marshal notification to JSON")
 		return err
 	}
 
 	// Get the correct notification topic based on the channel in the notiication
-	channelTopic := config.Notification.ChannelTopics[notification.Channel]
+	channelTopic, ok := config.Notification.ChannelTopics[notification.Channel]
+	if !ok {
+		service.logger.
+			Error().
+			Str("channel", notification.Channel).
+			Str("channelTopics", fmt.Sprintf("%#v", config.Notification.ChannelTopics)).
+			Msg("Channel not found")
+		return fmt.Errorf("channel %s not found", notification.Channel)
+	}
+
 	errProduce := service.producer.Produce(ctx, channelTopic, []byte(notification.RecipientID), messageJson)
 	if errProduce != nil {
-		service.logger.Error().Err(err).Msg("Failed to produce message")
+		service.logger.
+			Error().
+			Err(err).
+			Msg("Failed to produce message")
 		return err
 	}
 
