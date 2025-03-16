@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"sync"
 	"time"
@@ -13,7 +14,7 @@ import (
 // Producer is the interface for sending Kafka messages.
 type Producer interface {
 	Produce(ctx context.Context, topic string, key []byte, value []byte) error
-	Close()
+	Close(ctx context.Context) error
 }
 
 var _ Producer = (*kafkaProducer)(nil)
@@ -24,6 +25,7 @@ type Config struct {
 	RequiredAcks     int    // e.g. 1 or kafka.RequireAll (see kafka-go docs)
 	MaxRetries       int    // Maximum number of retry attempts
 	DeadLetterTopic  string // DLQ topic name
+
 	// Additional fields (e.g., TLS/SASL settings) can be added here.
 }
 
@@ -85,15 +87,37 @@ func (kp *kafkaProducer) Produce(ctx context.Context, topic string, key []byte, 
 }
 
 // Close gracefully shuts down the producer.
-func (kp *kafkaProducer) Close() {
+func (kp *kafkaProducer) Close(ctx context.Context) error {
+	var closeErr error
 	kp.closeOnce.Do(func() {
 		kp.logger.Info().Msg("Closing Kafka producer...")
-		close(kp.quit) // signal the worker to quit
-		kp.wg.Wait()   // wait for worker to finish processing
-		if err := kp.writer.Close(); err != nil {
-			kp.logger.Error().Err(err).Msg("Error closing Kafka writer")
+
+		// Signal worker to stop
+		close(kp.quit)
+
+		// Wait for worker with context
+		done := make(chan struct{})
+		go func() {
+			kp.wg.Wait()
+			close(done)
+		}()
+
+		select {
+		case <-done:
+			// Normal shutdown
+		case <-ctx.Done():
+			kp.logger.Warn().Msg("Timeout waiting for worker to finish")
+			closeErr = ctx.Err()
+		}
+
+		// Close writer and combine errors
+		if writerErr := kp.writer.Close(); writerErr != nil {
+			kp.logger.Error().Err(writerErr).Msg("Kafka writer close failed")
+			closeErr = errors.Join(closeErr, writerErr) // Go 1.20+
 		}
 	})
+
+	return closeErr
 }
 
 // startWorker launches a background goroutine to process enqueued messages.

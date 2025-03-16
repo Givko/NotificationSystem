@@ -1,7 +1,12 @@
 package server
 
 import (
+	"context"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
 	"github.com/Givko/NotificationSystem/notification-service/internal/handlers"
@@ -16,10 +21,11 @@ import (
 	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/metrics"
 )
 
-// Server is the server struct
 func InitServer() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
+	signalContext, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 	var zl zerolog.Logger
 	if os.Getenv("ENV") == "dev" {
 		zl = zerolog.New(zerolog.ConsoleWriter{
@@ -27,12 +33,8 @@ func InitServer() {
 			TimeFormat: "15:04:05",
 		}).With().Timestamp().Logger()
 	} else {
-		//Log into file in order for the logs to be persisted\
-		file, err := os.OpenFile("logs.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-		if err != nil {
-			panic(err)
-		}
-		zl = zerolog.New(file).With().Timestamp().Logger()
+		// Production: Use JSON format to stdout (machine-readable)
+		zl = zerolog.New(os.Stdout).With().Timestamp().Logger()
 	}
 
 	server := gin.Default()
@@ -45,10 +47,12 @@ func InitServer() {
 		MaxRetries:       configuration.Kafka.MaxRetries,
 		RequiredAcks:     configuration.Kafka.RequiredAcks,
 	})
+
 	if err != nil {
 		zl.Error().Err(err).Msg("Failed to create Kafka producer")
 		panic(err)
 	}
+
 	metrics := metrics.NewMetrics()
 	server.Use(middlewares.MetricsMiddleware(metrics))
 
@@ -57,5 +61,42 @@ func InitServer() {
 	notificationsGroup := server.Group("/api/v1")
 	notificationsGroup.POST("/notifications", notificaitonHandler.CreateNotificationHandler)
 	server.GET("/metrics", gin.WrapH(promhttp.Handler()))
-	server.Run(":" + configuration.Server.Port)
+
+	srv := &http.Server{
+		Addr:    ":" + configuration.Server.Port,
+		Handler: server,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			zl.Error().Err(err).Msg("Failed to start server")
+			stop()
+		}
+	}()
+
+	<-signalContext.Done()
+
+	// Create shutdown context with timeout
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Graceful shutdown sequence
+	zl.Info().Msg("Starting graceful shutdown...")
+
+	// 1. Shutdown HTTP server
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		zl.Error().Err(err).Msg("Failed to shutdown server gracefully")
+	}
+
+	// 2. Close Kafka producer
+	if producer != nil {
+		closeProducerErr := producer.Close(shutdownCtx)
+		if closeProducerErr != nil {
+			zl.Error().Err(closeProducerErr).Msg("Failed to close Kafka producer")
+		} else {
+			zl.Info().Msg("Kafka producer closed")
+		}
+	}
+
+	zl.Info().Msg("Shutdown complete")
 }
