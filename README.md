@@ -19,33 +19,7 @@ This notification system provides a centralized service for sending notification
 
 ## System Architecture
 
-                        +--------------------+
-                        |   Service 1 to N   |
-                        +---------+----------+
-                                 |
-                                 v
-                     +--------------------------+
-                     |    Notification Service  |
-                     | (Orchestrator/HTTP API)  |
-                     +-----------+--------------+
-                                 |
-                                 v  (Kafka)
-                  +---------------+----------------+
-                  |               |                |
-                  v               v                v
-            +-------------+   +------------+   +------------+
-            |  Slack Q    |   |  Email Q   |   |   SMS Q    |
-            +------+------+   +-----+------+   +-----+------+
-                  |                |                |
-                  v                v                v
-            +-------------+   +------------+   +------------+
-            | SlackWorker |   |EmailWorker |   | SMSWorker  |
-            +------+------+   +-----+------+   +-----+------+
-                  |                |                |
-                  v                v                v
-            +-------------------------------------------------+
-            |   Third-Party Services (Slack, Email, SMS, etc.)|
-            +-------------------------------------------------+
+![System Deisng](SystemDesign.jpg)
 
 ### Components
 
