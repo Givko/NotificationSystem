@@ -11,7 +11,7 @@ import (
 )
 
 type NotificationService interface {
-	SendNotification(notification contracts.Notification) error
+	SendNotification(ctx context.Context, notification contracts.Notification) error
 }
 
 var _ NotificationService = (*notificationService)(nil)
@@ -28,9 +28,9 @@ func NewNotificationService(producer kafka.Producer, logger zerolog.Logger) Noti
 	}
 }
 
-func (service *notificationService) SendNotification(notification contracts.Notification) error {
+func (service *notificationService) SendNotification(ctx context.Context, notification contracts.Notification) error {
 	config := config.GetConfig()
-	ctx := context.Background()
+
 	messageJson, err := notification.ToJSON()
 	if err != nil {
 		service.logger.

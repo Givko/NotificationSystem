@@ -28,8 +28,8 @@ func (handler *NotificationHandler) CreateNotificationHandler(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Failed to bind JSON body"})
 		return
 	}
-
-	err := handler.service.SendNotification(notification)
+	reqCtx := c.Request.Context()
+	err := handler.service.SendNotification(reqCtx, notification)
 	if err != nil {
 		handler.logger.Error().Err(err).Msg("Failed to produce message")
 		c.JSON(500, gin.H{"error": "Failed to produce message"})
