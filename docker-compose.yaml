@@ -72,6 +72,7 @@ services:
     build:
       context: ./notification-service
       dockerfile: Dockerfile
+      no_cache: true
     ports:
       - "8080:8080"
     volumes:

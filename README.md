@@ -6,8 +6,6 @@ A scalable, reliable notification service built with Go that supports multiple n
 
 This notification system provides a centralized service for sending notifications via multiple channels (email, SMS, Slack) with easy extensibility for future channels. The system is designed with horizontal scalability, reliability, and observability in mind.
 
-![Notification System Architecture](https://example.com/notification-system-architecture.png)
-
 ## Key Features
 
 - **Multi-channel Support**: Send notifications via email, SMS, and Slack
@@ -202,6 +200,7 @@ Enhanced security features:
 - API key authentication for service clients
 - Role-based access control for notification management
 - Audit logging for security compliance
+- or some mechanism which drops requests from not configured callers
 
 ## Getting Started
 
@@ -218,11 +217,25 @@ Enhanced security features:
 git clone https://github.com/Givko/NotificationSystem
 cd NotificationSystem
 ```
-
-2. Start Kafka with Docker Compose
+2. Start service and dependencies with Docker Compose
 ```bash
-docker-compose up -d
+docker-compose up --wait
 ```
+- This will use the available images
+
+or
+```bash
+docker-compose up --build --wait
+```
+- This will run build all images which have build context. This is useful for the notification-service because it will use the latest code
+
+or
+```bash
+docker-compose up zookeeper
+docker-compose up kafka
+docker-compose up kafka-init
+```
+- This will only run the dependencies which are needed when runing the service locally and not in docker
 
 3. Run the service
 ```bash
