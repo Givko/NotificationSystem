@@ -6,9 +6,14 @@ import (
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
 	"github.com/Givko/NotificationSystem/notification-service/internal/handlers"
 	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
+	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/middlewares"
 	"github.com/Givko/NotificationSystem/notification-service/internal/services"
+
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
+
+	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/metrics"
 )
 
 // Server is the server struct
@@ -44,11 +49,13 @@ func InitServer() {
 		zl.Error().Err(err).Msg("Failed to create Kafka producer")
 		panic(err)
 	}
+	metrics := metrics.NewMetrics()
+	server.Use(middlewares.MetricsMiddleware(metrics))
 
 	notificationService := services.NewNotificationService(producer, zl)
 	notificaitonHandler := handlers.NewNotificationHandler(notificationService, zl)
 	notificationsGroup := server.Group("/api/v1")
 	notificationsGroup.POST("/notifications", notificaitonHandler.CreateNotificationHandler)
-
+	server.GET("/metrics", gin.WrapH(promhttp.Handler()))
 	server.Run(":" + configuration.Server.Port)
 }

@@ -1,0 +1,111 @@
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"localhost:9092","time":1742070703497,"message":"Kafka producer created successfully"}
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"localhost:9092","time":1742070878282,"message":"Kafka producer created successfully"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138371592,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138372324,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138373023,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138373821,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138374983,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138376977,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138380511,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138387223,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138400343,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138426312,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/internal/config]\"","time":1742138477831,"message":"Error reading config file"}
+{"level":"info","time":1742138584436,"message":"Configuration updated"}
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"localhost:9092","time":1742138584436,"message":"Kafka producer created successfully"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742138591235,"message":"Enqueued message for asynchronous production"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742138591237,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742138591237,"message":"Starting message retry production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":1,"topic":"email-worker","time":1742138593237,"message":"Retrying message production"}
+{"level":"info","time":1742138771349,"message":"Configuration updated"}
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"localhost:9092","time":1742138771350,"message":"Kafka producer created successfully"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742138798888,"message":"Enqueued message for asynchronous production"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742138798890,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742138798890,"message":"Starting message retry production"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742138799771,"message":"Enqueued message for asynchronous production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":1,"topic":"email-worker","time":1742138800891,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":2,"topic":"email-worker","time":1742138804892,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":3,"topic":"email-worker","time":1742138812894,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742138812894,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","time":1742138812895,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742138812895,"message":"Message failed after retries, sent to DLQ"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742138812895,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742138812896,"message":"Starting message retry production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":1,"topic":"email-worker","time":1742138814897,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":2,"topic":"email-worker","time":1742138818900,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":3,"topic":"email-worker","time":1742138826901,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742138826901,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","time":1742138826901,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742138826902,"message":"Message failed after retries, sent to DLQ"}
+{"level":"info","time":1742139165685,"message":"Configuration updated"}
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"localhost:9092","time":1742139165686,"message":"Kafka producer created successfully"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742139207113,"message":"Enqueued message for asynchronous production"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139207114,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139207114,"message":"Starting message retry production"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742139207828,"message":"Enqueued message for asynchronous production"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742139208499,"message":"Enqueued message for asynchronous production"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742139209112,"message":"Enqueued message for asynchronous production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":1,"topic":"email-worker","time":1742139209115,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":2,"topic":"email-worker","time":1742139213116,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":3,"topic":"email-worker","time":1742139221117,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139221118,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","time":1742139221118,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139221118,"message":"Message failed after retries, sent to DLQ"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139221118,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139221119,"message":"Starting message retry production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":1,"topic":"email-worker","time":1742139223119,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":2,"topic":"email-worker","time":1742139227120,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":3,"topic":"email-worker","time":1742139235120,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139235121,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","time":1742139235121,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139235121,"message":"Message failed after retries, sent to DLQ"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139235121,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139235121,"message":"Starting message retry production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":1,"topic":"email-worker","time":1742139237123,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":2,"topic":"email-worker","time":1742139241123,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":3,"topic":"email-worker","time":1742139249124,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139249125,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","time":1742139249125,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139249125,"message":"Message failed after retries, sent to DLQ"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139249125,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139249126,"message":"Starting message retry production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":1,"topic":"email-worker","time":1742139251127,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":2,"topic":"email-worker","time":1742139255128,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","attempt":3,"topic":"email-worker","time":1742139263129,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139263130,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"dial tcp [::1]:9092: connect: connection refused","time":1742139263130,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139263131,"message":"Message failed after retries, sent to DLQ"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139747282,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139748376,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139749157,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139749996,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139751198,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139753219,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139756823,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139763604,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139776762,"message":"Error reading config file"}
+{"level":"error","error":"Config File \"config\" Not Found in \"[/notification-service/internal/config]\"","time":1742139802672,"message":"Error reading config file"}
+{"level":"info","time":1742139846003,"message":"Configuration updated"}
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"kafka:9092","time":1742139846003,"message":"Kafka producer created successfully"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742139858239,"message":"Enqueued message for asynchronous production"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742139859093,"message":"Enqueued message for asynchronous production"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139866656,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139866657,"message":"Starting message retry production"}
+{"level":"warn","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","attempt":1,"topic":"email-worker","time":1742139877068,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","attempt":2,"topic":"email-worker","time":1742139889479,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","attempt":3,"topic":"email-worker","time":1742139905889,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139905889,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","time":1742139914297,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139914298,"message":"Message failed after retries, sent to DLQ"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139922708,"message":"Initial write failed, starting retries"}
+{"level":"warn","component":"kafkaProducer","topic":"email-worker","time":1742139922708,"message":"Starting message retry production"}
+{"level":"warn","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","attempt":1,"topic":"email-worker","time":1742139933119,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","attempt":2,"topic":"email-worker","time":1742139945529,"message":"Retrying message production"}
+{"level":"warn","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","attempt":3,"topic":"email-worker","time":1742139961940,"message":"Retrying message production"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139961941,"message":"Max retries reached; sending to DLQ"}
+{"level":"error","component":"kafkaProducer","error":"Kafka write errors (1/1), errors: [kafka.(*Client).Produce: dial tcp [::1]:9092: connect: connection refused]","time":1742139970349,"message":"Failed to deliver message to DLQ"}
+{"level":"error","component":"kafkaProducer","topic":"email-worker","time":1742139970349,"message":"Message failed after retries, sent to DLQ"}
+{"level":"info","time":1742140163526,"message":"Configuration updated"}
+{"level":"info","component":"kafkaProducer","bootstrap.servers":"kafka:9092","time":1742140163527,"message":"Kafka producer created successfully"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742140173832,"message":"Enqueued message for asynchronous production"}
+{"level":"debug","component":"kafkaProducer","topic":"email-worker","time":1742140174638,"message":"Enqueued message for asynchronous production"}
