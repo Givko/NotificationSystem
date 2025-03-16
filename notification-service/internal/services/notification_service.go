@@ -5,12 +5,12 @@ import (
 
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
 	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
-	"github.com/Givko/NotificationSystem/notification-service/internal/models"
+	"github.com/Givko/NotificationSystem/notification-service/pkg/contracts"
 	"github.com/rs/zerolog"
 )
 
 type NotificationService interface {
-	SendNotification(notification models.Notification) error
+	SendNotification(notification contracts.Notification) error
 }
 
 var _ NotificationService = (*notificationService)(nil)
@@ -27,7 +27,7 @@ func NewNotificationService(producer kafka.Producer, logger zerolog.Logger) Noti
 	}
 }
 
-func (service *notificationService) SendNotification(notification models.Notification) error {
+func (service *notificationService) SendNotification(notification contracts.Notification) error {
 	config := config.GetConfig()
 	ctx := context.Background()
 	messageJson, err := notification.ToJSON()
@@ -37,8 +37,8 @@ func (service *notificationService) SendNotification(notification models.Notific
 	}
 
 	// Get the correct notification topic based on the channel in the notiication
-
-	errProduce := service.producer.Produce(ctx, config.NotificationTopic, []byte(notification.RecipientID), messageJson)
+	channelTopic := config.Notification.ChannelTopics[notification.Channel]
+	errProduce := service.producer.Produce(ctx, channelTopic, []byte(notification.RecipientID), messageJson)
 	if errProduce != nil {
 		service.logger.Error().Err(err).Msg("Failed to produce message")
 		return err

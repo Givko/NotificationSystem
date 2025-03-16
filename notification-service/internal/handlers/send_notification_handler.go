@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"github.com/Givko/NotificationSystem/notification-service/internal/models"
 	"github.com/Givko/NotificationSystem/notification-service/internal/services"
+	"github.com/Givko/NotificationSystem/notification-service/pkg/contracts"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
@@ -20,7 +20,7 @@ func NewNotificationHandler(service services.NotificationService, logger zerolog
 }
 
 func (handler *NotificationHandler) CreateNotificationHandler(c *gin.Context) {
-	var notification models.Notification
+	var notification contracts.Notification
 
 	// Bind JSON body to createDto
 	if err := c.ShouldBindJSON(&notification); err != nil {
