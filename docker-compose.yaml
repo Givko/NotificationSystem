@@ -44,8 +44,7 @@ services:
     image: confluentinc/cp-kafka:7.4.0
     container_name: kafka-init
     depends_on:
-      kafka:
-        condition: service_healthy
+      - kafka
     entrypoint: ["/bin/bash", "-c"]
     command: |
       "
@@ -90,15 +89,6 @@ services:
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    depends_on:
-      - prometheus
-    ports:
-      - "3000:3000"
     restart: unless-stopped
 
 volumes:

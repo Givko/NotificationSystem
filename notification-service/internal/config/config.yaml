@@ -1,7 +1,7 @@
 server:
   port: 8080
 kafka:
-  bootstrap-servers: kafka:9092
+  bootstrap-servers: localhost:9092
   required-acks: 1
   max-retries: 3
 notifications:
