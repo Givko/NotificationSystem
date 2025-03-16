@@ -206,7 +206,7 @@ func (kp *kafkaProducer) sendToDeadLetterQueue(ctx context.Context, failedMsg *k
 	if err != nil {
 		kp.logger.Error().Err(err).Msg("Failed to deliver message to DLQ")
 
-		// Optionally, add a fallback here (e.g., persist to file or trigger an alert).
+		// Optionally, add a fallback here (e.g., increment an error metric or trigger an alert).
 		return err
 	}
 
