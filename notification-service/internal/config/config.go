@@ -7,12 +7,24 @@ import (
 )
 
 type Config struct {
-	ServerPort           string
-	NotificationTopic    string
-	NotificationTopicDLQ string
-	BootstrapServers     string
+	Server       ServerConfig       `mapstructure:"server"`
+	Kafka        KafkaConfig        `mapstructure:"kafka"`
+	Notification NotificationConfig `mapstructure:"notifications"`
+}
 
-	// Add other configuration fields here.
+type KafkaConfig struct {
+	BootstrapServers string `mapstructure:"bootstrap-servers"`
+	RequiredAcks     int    `mapstructure:"required-acks"`
+	MaxRetries       int    `mapstructure:"max-retries"`
+}
+
+type ServerConfig struct {
+	Port string
+}
+
+type NotificationConfig struct {
+	ChannelTopics   map[string]string `mapstructure:"channel-topics"`
+	DeadLetterTopic string            `mapstructure:"dead-letter-topic"`
 }
 
 // Unexported configuration variable
@@ -28,7 +40,7 @@ func GetConfig() Config {
 func Init(logger zerolog.Logger) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".") // Adjust if your config is in a different directory
+	viper.AddConfigPath("../internal/config") // Adjust if your config is in a different directory
 
 	if err := viper.ReadInConfig(); err != nil {
 		logger.Err(err).Msg("Error reading config file")
@@ -45,12 +57,13 @@ func Init(logger zerolog.Logger) {
 }
 
 func updateConfig(logger zerolog.Logger) {
-	appConfig = Config{
-		ServerPort:           viper.GetString("server.port"),
-		NotificationTopic:    viper.GetString("kafka.notifications.topic"),
-		NotificationTopicDLQ: viper.GetString("kafka.notifications.dlq-topic"),
-		// Update other fields as needed
+	var config Config
+	err := viper.Unmarshal(&config)
+	if err != nil {
+		logger.Err(err).Msg("Error unmarshalling kafka config")
+		panic(err)
 	}
 
+	appConfig = config
 	logger.Info().Msg("Configuration updated")
 }

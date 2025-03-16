@@ -35,10 +35,10 @@ func InitServer() {
 
 	configuration := config.GetConfig()
 	producer, err := kafka.NewKafkaProducer(zl, kafka.Config{
-		BootstrapServers: configuration.BootstrapServers,
-		DeadLetterTopic:  configuration.NotificationTopicDLQ,
-		MaxRetries:       3,
-		RequiredAcks:     1,
+		BootstrapServers: configuration.Kafka.BootstrapServers,
+		DeadLetterTopic:  configuration.Notification.DeadLetterTopic,
+		MaxRetries:       configuration.Kafka.MaxRetries,
+		RequiredAcks:     configuration.Kafka.RequiredAcks,
 	})
 	if err != nil {
 		zl.Error().Err(err).Msg("Failed to create Kafka producer")
@@ -50,5 +50,5 @@ func InitServer() {
 	notificationsGroup := server.Group("/api/v1")
 	notificationsGroup.POST("/notifications", notificaitonHandler.CreateNotificationHandler)
 
-	server.Run(":" + configuration.ServerPort)
+	server.Run(":" + configuration.Server.Port)
 }
