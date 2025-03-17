@@ -42,10 +42,11 @@ func InitServer() {
 
 	configuration := config.GetConfig()
 	producer, err := kafka.NewKafkaProducer(zl, kafka.Config{
-		BootstrapServers: configuration.Kafka.BootstrapServers,
-		DeadLetterTopic:  configuration.Notification.DeadLetterTopic,
-		MaxRetries:       configuration.Kafka.MaxRetries,
-		RequiredAcks:     configuration.Kafka.RequiredAcks,
+		BootstrapServers:     configuration.Kafka.BootstrapServers,
+		DeadLetterTopic:      configuration.Notification.DeadLetterTopic,
+		MaxRetries:           configuration.Kafka.MaxRetries,
+		RequiredAcks:         configuration.Kafka.RequiredAcks,
+		MessageChannelBuffer: configuration.Kafka.MessageChannelBuffer,
 	})
 
 	if err != nil {

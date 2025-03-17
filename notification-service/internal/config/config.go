@@ -13,9 +13,10 @@ type Config struct {
 }
 
 type KafkaConfig struct {
-	BootstrapServers string `mapstructure:"bootstrap-servers"`
-	RequiredAcks     int    `mapstructure:"required-acks"`
-	MaxRetries       int    `mapstructure:"max-retries"`
+	BootstrapServers     string `mapstructure:"bootstrap-servers"`
+	RequiredAcks         int    `mapstructure:"required-acks"`
+	MaxRetries           int    `mapstructure:"max-retries"`
+	MessageChannelBuffer int    `mapstructure:"message-channel-buffer"`
 }
 
 type ServerConfig struct {
