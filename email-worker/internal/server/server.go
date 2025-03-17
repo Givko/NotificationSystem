@@ -64,6 +64,7 @@ func InitServer() {
 		CommitInterval:        0,
 		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
 		ConsumerChannelBuffer: configuration.Kafka.ConsumerConfig.MessageChannelBuffer,
+		ConsumerWorkerPool:    configuration.Kafka.ConsumerConfig.WorkerPool,
 	}
 
 	emailNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)

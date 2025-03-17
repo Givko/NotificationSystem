@@ -5,3 +5,7 @@
   - job_name: 'notification-service-app'
     static_configs:
       - targets: ['notification-service:8080']
+  - job_name: 'email-worker-app'
+    static_configs:
+      - targets: ['email-worker:8080']
+  
