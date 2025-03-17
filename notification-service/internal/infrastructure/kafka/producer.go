@@ -21,10 +21,11 @@ var _ Producer = (*kafkaProducer)(nil)
 
 // Config holds configuration options for the Kafka producer.
 type Config struct {
-	BootstrapServers string // Comma-separated list of brokers: "broker1:9092,broker2:9092"
-	RequiredAcks     int    // e.g. 1 or kafka.RequireAll (see kafka-go docs)
-	MaxRetries       int    // Maximum number of retry attempts
-	DeadLetterTopic  string // DLQ topic name
+	BootstrapServers     string // Comma-separated list of brokers: "broker1:9092,broker2:9092"
+	RequiredAcks         int    // e.g. 1 or kafka.RequireAll (see kafka-go docs)
+	MaxRetries           int    // Maximum number of retry attempts
+	DeadLetterTopic      string // DLQ topic name
+	MessageChannelBuffer int
 
 	// Additional fields (e.g., TLS/SASL settings) can be added here.
 }
@@ -38,9 +39,10 @@ type kafkaProducer struct {
 	deadLetterTopic string
 	msgChan         chan kafka.Message
 	quit            chan struct{}
-	closeOnce       sync.Once
-	closed          bool
-	closedMutex     sync.RWMutex
+
+	closeOnce   sync.Once
+	closed      bool
+	closedMutex sync.RWMutex
 }
 
 // NewKafkaProducer creates and configures a new Kafka producer.
@@ -56,7 +58,7 @@ func NewKafkaProducer(logger zerolog.Logger, cfg Config) (Producer, error) {
 		maxRetries:      cfg.MaxRetries,
 		deadLetterTopic: cfg.DeadLetterTopic,
 		wg:              sync.WaitGroup{},
-		msgChan:         make(chan kafka.Message, 1000), // make configurable
+		msgChan:         make(chan kafka.Message, cfg.MessageChannelBuffer), // make configurable
 		quit:            make(chan struct{}),
 		closed:          false,
 		closedMutex:     sync.RWMutex{},
@@ -248,16 +250,17 @@ func (kp *kafkaProducer) sendToDeadLetterQueue(ctx context.Context, failedMsg *k
 		Value: []byte(time.Now().Format(time.RFC3339)),
 	})
 
-	err := kp.writer.WriteMessages(ctx, *dlqMsg)
-	if err != nil {
-		kp.logger.Error().Err(err).Msg("Failed to deliver message to DLQ")
-
-		// Optionally, add a fallback here (e.g., increment an error metric or trigger an alert).
-		return err
+	var err error
+	for attempt := 1; attempt <= kp.maxRetries; attempt++ {
+		err = kp.writer.WriteMessages(ctx, *dlqMsg)
+		if err == nil {
+			return nil
+		}
+		time.Sleep(time.Second * time.Duration(attempt)) // Simple backoff
 	}
 
-	kp.logger.Info().Msg("Message delivered to DLQ successfully")
-	return nil
+	kp.logger.Error().Msg("DLQ write failed after retries; message lost")
+	return err
 }
 
 // copyMessage makes a deep copy of a kafka.Message.

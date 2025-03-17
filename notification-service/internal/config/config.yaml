@@ -4,6 +4,7 @@ kafka:
   bootstrap-servers: localhost:9092
   required-acks: 1
   max-retries: 3
+  message-channel-buffer: 1000
 notifications:
   channel-topics:
     slack: slack-worker
