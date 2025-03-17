@@ -12,6 +12,15 @@
             "mode": "auto",
             "program": "./notification-service/main.go",
             "env": {"ENV": "dev"}
+        },
+        {
+            "name": "Launch email-worker",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "./email-worker/main.go",
+            "env": {"ENV": "dev"}
         }
+        
     ]
 }
