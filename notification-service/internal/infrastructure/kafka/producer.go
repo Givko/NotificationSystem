@@ -39,6 +39,8 @@ type kafkaProducer struct {
 	msgChan         chan kafka.Message
 	quit            chan struct{}
 	closeOnce       sync.Once
+	closed          bool
+	closedMutex     sync.RWMutex
 }
 
 // NewKafkaProducer creates and configures a new Kafka producer.
@@ -56,6 +58,8 @@ func NewKafkaProducer(logger zerolog.Logger, cfg Config) (Producer, error) {
 		wg:              sync.WaitGroup{},
 		msgChan:         make(chan kafka.Message, 1000), // make configurable
 		quit:            make(chan struct{}),
+		closed:          false,
+		closedMutex:     sync.RWMutex{},
 	}
 
 	kp.logger.Info().
@@ -69,6 +73,14 @@ func NewKafkaProducer(logger zerolog.Logger, cfg Config) (Producer, error) {
 
 // Produce sends a message to a given topic. If sending fails, a retry is scheduled.
 func (kp *kafkaProducer) Produce(ctx context.Context, topic string, key []byte, value []byte) error {
+	kp.closedMutex.RLock()
+	if kp.closed {
+		kp.closedMutex.RUnlock()
+		return errors.New("producer is closed")
+	}
+
+	kp.closedMutex.RUnlock()
+
 	msg := kafka.Message{
 		Topic:   topic,
 		Key:     key,
@@ -91,6 +103,13 @@ func (kp *kafkaProducer) Close(ctx context.Context) error {
 	var closeErr error
 	kp.closeOnce.Do(func() {
 		kp.logger.Info().Msg("Closing Kafka producer...")
+
+		// Set closed flag in order to prevent further message enqueuing.
+		kp.closedMutex.Lock()
+		kp.closed = true
+		kp.closedMutex.Unlock()
+
+		close(kp.msgChan)
 
 		// Signal worker to stop
 		close(kp.quit)
@@ -127,7 +146,10 @@ func (kp *kafkaProducer) startWorker() {
 		defer kp.wg.Done()
 		for {
 			select {
-			case msg := <-kp.msgChan:
+			case msg, ok := <-kp.msgChan:
+				if !ok {
+					return
+				}
 				kp.handleMessage(context.Background(), msg)
 			case <-kp.quit:
 
