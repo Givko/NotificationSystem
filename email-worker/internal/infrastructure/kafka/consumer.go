@@ -33,9 +33,9 @@ type ConsumerConfig struct {
 	MaxProcessingRetries  int           // Number of attempts to process a message before giving up
 	DeadLetterTopic       string        // Topic name for the Dead Letter Queue (DLQ)
 	ConsumerChannelBuffer int           // Size of the message channel buffer
+	ConsumerWorkerPool    int           // Number of worker goroutines to process messages
 }
 
-// kafkaConsumer implements the Consumer interface using kafka-go.
 type kafkaConsumer struct {
 	reader *kafka.Reader
 	logger zerolog.Logger
@@ -57,9 +57,7 @@ func NewKafkaConsumer(logger zerolog.Logger, cfg ConsumerConfig, producer Produc
 		return nil, errors.New("no topics provided")
 	}
 
-	// Split the bootstrap servers into a slice.
 	brokers := strings.Split(cfg.BootstrapServers, ",")
-
 	readerConfig := kafka.ReaderConfig{
 		Brokers:        brokers,
 		GroupID:        cfg.GroupID,
@@ -93,11 +91,13 @@ func NewKafkaConsumer(logger zerolog.Logger, cfg ConsumerConfig, producer Produc
 func (kc *kafkaConsumer) Start(ctx context.Context, handler func(ctx context.Context, msg *kafka.Message) error) error {
 	defer kc.Close()
 
-	kc.wg.Add(1)
-	go func() {
-		defer kc.wg.Done()
-		kc.consumeMessages(ctx, handler)
-	}()
+	for i := 0; i < kc.config.ConsumerWorkerPool; i++ {
+		kc.wg.Add(1)
+		go func() {
+			defer kc.wg.Done()
+			kc.worker(ctx, handler)
+		}()
+	}
 
 	for {
 		if ctx.Err() != nil {
@@ -105,10 +105,8 @@ func (kc *kafkaConsumer) Start(ctx context.Context, handler func(ctx context.Con
 			return nil
 		}
 
-		// Read the next message (this call will block)
 		msg, err := kc.reader.ReadMessage(ctx)
 		if err != nil {
-			// When the context is cancelled or the reader is closed, exit gracefully.
 			if errors.Is(err, context.Canceled) {
 				kc.logger.Info().Msg("Context canceled, stopping consumer")
 				return nil
@@ -127,7 +125,7 @@ func (kc *kafkaConsumer) Start(ctx context.Context, handler func(ctx context.Con
 	}
 }
 
-func (kc *kafkaConsumer) consumeMessages(ctx context.Context, handler func(ctx context.Context, msg *kafka.Message) error) {
+func (kc *kafkaConsumer) worker(ctx context.Context, handler func(ctx context.Context, msg *kafka.Message) error) {
 	for {
 		select {
 		case msg, ok := <-kc.msgChannel:
@@ -136,11 +134,7 @@ func (kc *kafkaConsumer) consumeMessages(ctx context.Context, handler func(ctx c
 				return
 			}
 
-			kc.wg.Add(1)
-			go func(msg kafka.Message) {
-				defer kc.wg.Done()
-				kc.processMessage(ctx, msg, handler)
-			}(msg)
+			kc.processMessage(ctx, msg, handler)
 		case <-ctx.Done():
 			kc.logger.Info().Msg("Context canceled, stopping message processing")
 			return
@@ -150,7 +144,6 @@ func (kc *kafkaConsumer) consumeMessages(ctx context.Context, handler func(ctx c
 
 func (kc *kafkaConsumer) processMessage(ctx context.Context, msg kafka.Message, handler func(ctx context.Context, msg *kafka.Message) error) {
 	start := time.Now()
-	// Process the message with retry logic.
 	success := false
 	defer func() {
 		kc.metrics.ObserveHTTPRequestDuration(msg.Topic, success, time.Since(start).Seconds())
@@ -189,17 +182,24 @@ func (kc *kafkaConsumer) processMessage(ctx context.Context, msg kafka.Message, 
 				kc.logger.Error().
 					Err(err).
 					Msg("Failed to send message to DLQ")
+				// We could also log the message to a file or database for manual inspection.
+				// and commit the message offset to avoid reprocessing.
 			} else {
 				kc.logger.Info().Msg("Message sent to DLQ")
+				kc.commitMessages(ctx, msg)
 			}
 		}
 	} else {
-		// On successful processing, commit the message offset if using manual commits.
-		// When CommitInterval > 0, offsets are auto-committed.
-		if kc.config.CommitInterval == 0 {
-			if err := kc.reader.CommitMessages(ctx, msg); err != nil {
-				kc.logger.Error().Err(err).Msg("Failed to commit message offset")
-			}
+		kc.commitMessages(ctx, msg)
+	}
+}
+
+func (kc *kafkaConsumer) commitMessages(ctx context.Context, msg kafka.Message) {
+	// On successful processing, commit the message offset if using manual commits.
+	// When CommitInterval > 0, offsets are auto-committed.
+	if kc.config.CommitInterval == 0 {
+		if err := kc.reader.CommitMessages(ctx, msg); err != nil {
+			kc.logger.Error().Err(err).Msg("Failed to commit message offset")
 		}
 	}
 }
@@ -220,7 +220,6 @@ func (kc *kafkaConsumer) Close() error {
 
 		// Wait for all message processing goroutines to finish.
 		kc.wg.Wait()
-
 		if err = kc.reader.Close(); err != nil {
 			kc.logger.Error().Err(err).Msg("Error closing Kafka reader")
 			return

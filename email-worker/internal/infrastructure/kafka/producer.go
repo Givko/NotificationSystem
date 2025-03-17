@@ -88,10 +88,9 @@ func (kp *kafkaProducer) Produce(ctx context.Context, topic string, key []byte, 
 		Topic:   topic,
 		Key:     key,
 		Value:   value,
-		Headers: []kafka.Header{}, // Start with no headers.
+		Headers: []kafka.Header{},
 	}
 
-	// Try to enqueue the message, but respect context cancellation.
 	select {
 	case kp.msgChan <- msg:
 		kp.logger.Debug().Str("topic", topic).Msg("Enqueued message for asynchronous production")
@@ -107,17 +106,14 @@ func (kp *kafkaProducer) Close(ctx context.Context) error {
 	kp.closeOnce.Do(func() {
 		kp.logger.Info().Msg("Closing Kafka producer...")
 
-		// Set closed flag in order to prevent further message enqueuing.
 		kp.closedMutex.Lock()
 		kp.closed = true
 		kp.closedMutex.Unlock()
 
 		close(kp.msgChan)
 
-		// Signal worker to stop
 		close(kp.quit)
 
-		// Wait for worker with context
 		done := make(chan struct{})
 		go func() {
 			kp.wg.Wait()
@@ -126,13 +122,11 @@ func (kp *kafkaProducer) Close(ctx context.Context) error {
 
 		select {
 		case <-done:
-			// Normal shutdown
 		case <-ctx.Done():
 			kp.logger.Warn().Msg("Timeout waiting for worker to finish")
 			closeErr = ctx.Err()
 		}
 
-		// Close writer and combine errors
 		if writerErr := kp.writer.Close(); writerErr != nil {
 			kp.logger.Error().Err(writerErr).Msg("Kafka writer close failed")
 			closeErr = errors.Join(closeErr, writerErr) // Go 1.20+
