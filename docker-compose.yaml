@@ -65,46 +65,46 @@ services:
       "
     restart: "no"
   
-  notification-service:
-    image: notification-service:latest
-    build:
-      context: ./notification-service
-      dockerfile: Dockerfile
-      no_cache: true
-    ports:
-      - "8081:8080"
-    volumes:
-      - ./notification-service/logs.log:/app/logs.log
-    environment:
-      - ENV=dev
-    restart: on-failure
+  # notification-service:
+  #   image: notification-service:latest
+  #   build:
+  #     context: ./notification-service
+  #     dockerfile: Dockerfile
+  #     no_cache: true
+  #   ports:
+  #     - "8081:8080"
+  #   volumes:
+  #     - ./notification-service/logs.log:/app/logs.log
+  #   environment:
+  #     - ENV=dev
+  #   restart: on-failure
 
     
-  email-worker:
-    image: email-worker:latest
-    build:
-      context: ./email-worker
-      dockerfile: Dockerfile
-      no_cache: true
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./email-worker/logs.log:/app/logs.log
-    environment:
-      - ENV=dev
-    restart: on-failure
+  # email-worker:
+  #   image: email-worker:latest
+  #   build:
+  #     context: ./email-worker
+  #     dockerfile: Dockerfile
+  #     no_cache: true
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./email-worker/logs.log:/app/logs.log
+  #   environment:
+  #     - ENV=dev
+  #   restart: on-failure
 
 
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      # Mount the Prometheus configuration file (see below)
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"
-    restart: unless-stopped
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus
+  #   volumes:
+  #     # Mount the Prometheus configuration file (see below)
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus_data:/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   restart: unless-stopped
 
 volumes:
   kafka-data:
