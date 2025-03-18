@@ -52,6 +52,15 @@ func InitServer() {
 	metrics := metrics.NewMetrics()
 	server.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
+	//If using k8s we can split this into liveness and readiness probes
+	server.GET("/health", func(c *gin.Context) {
+
+		//Here we will add some health checks for hard dependencies like DB, Kafka, etc.
+		//For now, we will just return ok
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	})
 	srv := &http.Server{
 		Addr:    ":" + configuration.Server.Port,
 		Handler: server,
