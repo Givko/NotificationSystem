@@ -3,29 +3,30 @@ FROM golang:1.24.1-bullseye AS builder
 
 WORKDIR /usr/src/app
 
-# Copy dependency files
+# Copy Go module files first to leverage Docker layer caching
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify && go mod tidy
 
-# Copy the entire source code
+# Copy your local shared library from ../shared into /usr/src/shared
+# (Assumes your build context includes ../shared)
+COPY ../shared /usr/src/shared
+
+# Now copy all remaining application source code
 COPY . .
 
 # Build the binary (statically linked)
 RUN CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/app .
-
-# Pre-create logs file
-RUN mkdir -p /app && touch /app/logs.log && chmod 666 /app/logs.log
 
 # Final stage: distroless image with non-root user
 FROM gcr.io/distroless/static-debian11
 
 LABEL maintainer="milevjivko@gmail.com"
 
-# Copy the built binary
+# Copy the built binary from the builder stage
 COPY --from=builder /usr/local/bin/app /app/app
 
-# **Copy the configuration file into the container**
-COPY --from=builder /usr/src/app/internal/config/config.yaml app/internal/config/config.yaml
+# Copy the configuration file (as in your original example)
+COPY --from=builder /usr/src/app/internal/config/config.yaml /app/internal/config/config.yaml
 
 # Set working directory to /app so logs.log is created there
 WORKDIR /app

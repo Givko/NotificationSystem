@@ -14,12 +14,21 @@ import (
 
 // Producer is the interface for sending Kafka messages.
 type Producer interface {
+	// Produce sends a message to a given topic. If sending fails, a retry is scheduled.
+	// The returned channel will receive an error when the message is successfully produced or when an error occurs.
+	// The error will be nil if the message is produced successfully.
+	// The error will be non-nil if the message could not be produced after all retries
 	Produce(ctx context.Context, topic string, key []byte, value []byte) <-chan error
+
+	// Close gracefully shuts down the producer.
+	// The context is used to enforce a timeout for the operation.
 	Close(ctx context.Context) error
 }
 
 var _ Producer = (*kafkaProducer)(nil)
 
+// KafkaWriter is an interface for writing messages to Kafka.
+// It is used to abstract the kafka.Writer dependency for testing.
 type KafkaWriter interface {
 	WriteMessages(ctx context.Context, msgs ...kafka.Message) error
 	Close() error
@@ -30,10 +39,10 @@ type Config struct {
 	BootstrapServers     string // Comma-separated list of brokers: "broker1:9092,broker2:9092"
 	RequiredAcks         int    // e.g. 1 or kafka.RequireAll (see kafka-go docs)
 	MaxRetries           int    // Maximum number of retry attempts
-	MessageChannelBuffer int
-	WorkerPoolSize       int
-	BatchSize            int
-	BatchTimeoutMs       int
+	MessageChannelBuffer int    // Size of the message channel buffer
+	WorkerPoolSize       int    // Number of worker goroutines to process messages
+	BatchSize            int    // Maximum number of messages to batch before sending
+	BatchTimeoutMs       int    // Maximum time to wait before sending a batch
 
 	// Additional fields (e.g., TLS/SASL settings) can be added here.
 }

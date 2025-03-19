@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Givko/NotificationSystem/shared/kafka"
+	"github.com/Givko/NotificationSystem/shared/metrics"
 	"github.com/Givko/NotificationSystem/slack-worker/internal/config"
-	"github.com/Givko/NotificationSystem/slack-worker/internal/infrastructure/kafka"
-	"github.com/Givko/NotificationSystem/slack-worker/internal/infrastructure/metrics"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"

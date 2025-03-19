@@ -13,9 +13,6 @@ COPY . .
 # Build the binary (statically linked)
 RUN CGO_ENABLED=0 GOOS=linux go build -o /usr/local/bin/app .
 
-# Pre-create logs file
-RUN mkdir -p /app && touch /app/logs.log && chmod 666 /app/logs.log
-
 # Final stage: distroless image with non-root user
 FROM gcr.io/distroless/static-debian11
 
