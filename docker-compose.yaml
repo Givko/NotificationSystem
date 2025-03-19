@@ -65,24 +65,21 @@ services:
       "
     restart: "no"
   
-  notification-service:
-    image: notification-service:latest
+  notification-orchestrator:
+    image: notification-orchestrator:latest
     build:
-      context: ./notification-service
-      dockerfile: Dockerfile
-      no_cache: true
+      context: .
+      dockerfile: ./docker/notification-orchestrator/Dockerfile
     ports:
       - "8081:8080"
     environment:
       - ENV=dev
-    restart: on-failure
     
   sms-worker:
     image: sms-worker:latest
     build:
-      context: ./sms-worker
-      dockerfile: Dockerfile
-      no_cache: true
+      context: .
+      dockerfile: ./docker/sms-worker/Dockerfile
     ports:
       - "8082:8080"
     environment:
@@ -92,9 +89,8 @@ services:
   slack-worker:
     image: slack-worker:latest
     build:
-      context: ./slack-worker
-      dockerfile: Dockerfile
-      no_cache: true
+      context: .
+      dockerfile: ./docker/slack-worker/Dockerfile
     ports:
       - "8083:8080"
     environment:
@@ -104,9 +100,8 @@ services:
   email-worker:
     image: email-worker:latest
     build:
-      context: ./email-worker
-      dockerfile: Dockerfile
-      no_cache: true
+      context: .
+      dockerfile: ./docker/email-worker/Dockerfile
     ports:
       - "8080:8080"
     environment:
