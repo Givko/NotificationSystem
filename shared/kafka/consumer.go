@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Givko/NotificationSystem/slack-worker/internal/infrastructure/metrics"
-	"github.com/Givko/NotificationSystem/slack-worker/internal/utils"
+	"github.com/Givko/NotificationSystem/shared/metrics"
+	"github.com/Givko/NotificationSystem/shared/utils"
 	"github.com/rs/zerolog"
 	"github.com/segmentio/kafka-go"
 )
@@ -37,9 +37,21 @@ type ConsumerConfig struct {
 	ConsumerWorkerPool    int           // Number of worker goroutines to process messages
 }
 
+// Reader is an interface for reading messages from Kafka.
+// It is used to abstract the kafka.Reader dependency for testing.
 type Reader interface {
+	// ReadMessage reads the next message from the topic.
+	// This method blocks until a message is available or the context is cancelled.
+	// If the context is cancelled, an error is returned.
 	ReadMessage(ctx context.Context) (kafka.Message, error)
+
+	// CommitMessages commits the provided messages.
+	// This method is used for manual commits.
+	// If the context is cancelled, an error is returned.
 	CommitMessages(ctx context.Context, msgs ...kafka.Message) error
+
+	// Close gracefully shuts down the reader.
+	// This method is used to close the reader when the consumer is shut down.
 	Close() error
 }
 
@@ -153,7 +165,7 @@ func (kc *kafkaConsumer) processMessage(ctx context.Context, msg kafka.Message, 
 	start := time.Now()
 	success := false
 	defer func() {
-		kc.metrics.ObserveHTTPRequestDuration(msg.Topic, success, time.Since(start).Seconds())
+		kc.metrics.ObserveKafkaConsumerDuration(msg.Topic, success, time.Since(start).Seconds())
 	}()
 
 	for attempt := 0; attempt <= kc.config.MaxProcessingRetries; attempt++ {

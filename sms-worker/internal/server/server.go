@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Givko/NotificationSystem/shared/kafka"
+	"github.com/Givko/NotificationSystem/shared/metrics"
 	"github.com/Givko/NotificationSystem/sms-worker/internal/config"
-	"github.com/Givko/NotificationSystem/sms-worker/internal/infrastructure/kafka"
-	"github.com/Givko/NotificationSystem/sms-worker/internal/infrastructure/metrics"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
@@ -73,7 +73,7 @@ func InitServer() {
 		BootstrapServers:      configuration.Kafka.BootstrapServers,
 		GroupID:               configuration.Kafka.ConsumerConfig.GroupID,
 		Topic:                 configuration.Kafka.ConsumerConfig.EmailTopic,
-		CommitInterval:        0,
+		CommitInterval:        0, // manual commit. Make configurable
 		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
 		ConsumerChannelBuffer: configuration.Kafka.ConsumerConfig.MessageChannelBuffer,
 		ConsumerWorkerPool:    configuration.Kafka.ConsumerConfig.WorkerPool,

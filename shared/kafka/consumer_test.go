@@ -38,7 +38,11 @@ func (fr *fakeReader) Close() error {
 // dummyMetrics implements a no-op metrics collector.
 type dummyMetrics struct{}
 
-func (dm *dummyMetrics) ObserveHTTPRequestDuration(handler string, success bool, duration float64) {
+func (dm *dummyMetrics) ObserveHTTPRequestDuration(handler, method, status string, duration float64) {
+	// no-op for tests
+}
+
+func (dm *dummyMetrics) ObserveKafkaConsumerDuration(topic string, success bool, duration float64) {
 	// no-op for tests
 }
 

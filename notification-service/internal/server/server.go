@@ -10,15 +10,15 @@ import (
 
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
 	"github.com/Givko/NotificationSystem/notification-service/internal/handlers"
-	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
 	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/middlewares"
 	"github.com/Givko/NotificationSystem/notification-service/internal/services"
+	"github.com/Givko/NotificationSystem/shared/kafka"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 
-	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/metrics"
+	"github.com/Givko/NotificationSystem/shared/metrics"
 )
 
 func InitServer() {
@@ -43,7 +43,6 @@ func InitServer() {
 	configuration := config.GetConfig()
 	producer, err := kafka.NewKafkaProducer(zl, kafka.Config{
 		BootstrapServers:     configuration.Kafka.BootstrapServers,
-		DeadLetterTopic:      configuration.Notification.DeadLetterTopic,
 		MaxRetries:           configuration.Kafka.MaxRetries,
 		RequiredAcks:         configuration.Kafka.RequiredAcks,
 		MessageChannelBuffer: configuration.Kafka.MessageChannelBuffer,

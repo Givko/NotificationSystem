@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
-	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
 	"github.com/Givko/NotificationSystem/notification-service/pkg/contracts"
+	"github.com/Givko/NotificationSystem/shared/kafka"
 	"github.com/rs/zerolog"
 )
 

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/metrics"
+	"github.com/Givko/NotificationSystem/shared/metrics"
 	"github.com/gin-gonic/gin"
 )
 
