@@ -1,31 +1,40 @@
-# This workflow will build a golang project
-name: Go
+name: Go Build and Test
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
-    strategy: 
+    strategy:
       matrix:
-        go-version: [ '1.24.x' ]
+        module: 
+          - notification-service
+          - email-worker
+          - sms-worker
+          - slack-worker
+        go-version: [ "1.24.x" ]
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go-version }}
-    - name: Install dependecies
-      run: go get .  
-    - name: Build
-      run: go build -v ./...
-
-    - name: Set up gotestfmt
-      run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
-
-  # Run tests with nice formatting. 
-    - name: Run tests
-      run: |
-        set -euo pipefail
-        go test -cover -json -v ./... 2>&1 | gotestfmt
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      
+      - name: Install gotestfmt
+        run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
+      
+      - name: Build and Test ${{ matrix.module }}
+        working-directory: ./${{ matrix.module }}
+        run: |
+          echo "Running go mod tidy in ${{ matrix.module }}"
+          go mod tidy
+          echo "Building ${{ matrix.module }}..."
+          go build -v ./...
+          echo "Running tests for ${{ matrix.module }}..."
+          # Use gotestfmt for nicely formatted test output
+          go test -cover -json -v ./... 2>&1 | gotestfmt
