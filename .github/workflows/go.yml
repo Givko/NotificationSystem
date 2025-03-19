@@ -25,16 +25,19 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
       
+      - name: Install Dependencies
+        working-directory: ./${{ matrix.module }}
+        run: go mod download
+      
       - name: Install gotestfmt
         run: go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
       
       - name: Build and Test ${{ matrix.module }}
         working-directory: ./${{ matrix.module }}
         run: |
-          echo "Running go mod tidy in ${{ matrix.module }}"
+          echo "Running go mod tidy in ${{ matrix.module }}..."
           go mod tidy
           echo "Building ${{ matrix.module }}..."
           go build -v ./...
           echo "Running tests for ${{ matrix.module }}..."
-          # Use gotestfmt for nicely formatted test output
           go test -cover -json -v ./... 2>&1 | gotestfmt
