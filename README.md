@@ -144,7 +144,3 @@ docker pull jivkomilev/slack-worker:latest
 ## Monitoring
 
 Access Prometheus metrics at: http://localhost:9090
-
-## License
-
-[Add your license information here]
