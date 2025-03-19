@@ -68,6 +68,8 @@ services:
   
   notification-orchestrator:
     image: notification-orchestrator:latest
+    depends_on:
+      - kafka
     build:
       context: .
       dockerfile: ./docker/notification-orchestrator/Dockerfile
@@ -78,6 +80,8 @@ services:
     
   sms-worker:
     image: sms-worker:latest
+    depends_on:
+      - kafka
     build:
       context: .
       dockerfile: ./docker/sms-worker/Dockerfile
@@ -89,6 +93,8 @@ services:
 
   slack-worker:
     image: slack-worker:latest
+    depends_on:
+      - kafka
     build:
       context: .
       dockerfile: ./docker/slack-worker/Dockerfile
@@ -100,6 +106,8 @@ services:
 
   email-worker:
     image: email-worker:latest
+    depends_on:
+      - kafka
     build:
       context: .
       dockerfile: ./docker/email-worker/Dockerfile
@@ -111,6 +119,11 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    depends_on:
+      - notification-orchestrator
+      - email-worker
+      - sms-worker
+      - slack-worker
     container_name: prometheus
     volumes:
       # Mount the Prometheus configuration file (see below)
