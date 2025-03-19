@@ -15,3 +15,4 @@ kafka:
     enable-auto-commit: false
     message-channel-buffer: 1000
     worker-pool: 100
+    dead-letter-topic: email-worker-dlq

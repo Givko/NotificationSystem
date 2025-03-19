@@ -24,6 +24,7 @@ type KafkaConsumerConfig struct {
 	AutoCommitInterval   int    `mapstructure:"auto-commit-interval"`
 	WorkerPool           int    `mapstructure:"worker-pool"`
 	GroupID              string `mapstructure:"group-id"`
+	DeadLetterTopic      string `mapstructure:"dead-letter-topic"`
 }
 
 type KafkaProducerConfig struct {
