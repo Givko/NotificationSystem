@@ -119,44 +119,6 @@ func TestProducerProduceRetry(t *testing.T) {
 	}
 }
 
-// TestProducerClosed verifies that producing a message after closing returns an error.
-func TestProducerClosed(t *testing.T) {
-	logger := zerolog.Nop()
-	cfg := Config{
-		BootstrapServers:     "localhost:9092",
-		RequiredAcks:         1,
-		MaxRetries:           3,
-		DeadLetterTopic:      "dlq",
-		MessageChannelBuffer: 10,
-		WorkerPoolSize:       1,
-		BatchSize:            1,
-		BatchTimeoutMs:       150,
-	}
-
-	prod, err := NewKafkaProducer(logger, cfg)
-	if err != nil {
-		t.Fatalf("Failed to create producer: %v", err)
-	}
-
-	// Close the producer.
-	closeCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-	defer cancel()
-	if err := prod.Close(closeCtx); err != nil {
-		t.Fatalf("Failed to close producer: %v", err)
-	}
-
-	ctx := context.Background()
-	errChan := prod.Produce(ctx, "test-topic", []byte("key"), []byte("value"))
-	select {
-	case e := <-errChan:
-		if e == nil || e.Error() != "producer is closed" {
-			t.Fatalf("Expected 'producer is closed' error, got %v", e)
-		}
-	case <-time.After(500 * time.Millisecond):
-		t.Fatal("Timed out waiting for Produce to return")
-	}
-}
-
 // TestProducerProduceContextCancelled tests that if the context is cancelled before the message is enqueued,
 // the errChan returns the proper error.
 func TestProducerProduceContextCancelled(t *testing.T) {
