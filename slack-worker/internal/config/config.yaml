@@ -10,8 +10,8 @@ kafka:
     batch-size: 1 #this is only for testing purposes
     batch-timeout-ms: 150
   consumer:
-    email-topic: email-worker
-    group-id: email-worker
+    email-topic: slack-worker
+    group-id: slack-worker
     enable-auto-commit: false
     message-channel-buffer: 1000
     worker-pool: 100

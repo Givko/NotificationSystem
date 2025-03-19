@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Givko/NotificationSystem/email-worker/internal/infrastructure/metrics"
-	"github.com/Givko/NotificationSystem/email-worker/internal/utils"
+	"github.com/Givko/NotificationSystem/slack-worker/internal/infrastructure/metrics"
+	"github.com/Givko/NotificationSystem/slack-worker/internal/utils"
 	"github.com/rs/zerolog"
 	"github.com/segmentio/kafka-go"
 )

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Givko/NotificationSystem/notification-service/internal/config"
 	"github.com/Givko/NotificationSystem/notification-service/internal/infrastructure/kafka"
@@ -51,12 +52,16 @@ func (service *notificationService) SendNotification(ctx context.Context, notifi
 		return fmt.Errorf("channel %s not found", notification.Channel)
 	}
 
-	errProduce := service.producer.Produce(ctx, channelTopic, []byte(notification.RecipientID), messageJson)
-	if errProduce != nil {
+	timeoutDuration := time.Duration(5) * time.Second // make this configurable
+	ctxWithDeadline, cancel := context.WithTimeoutCause(ctx, timeoutDuration, fmt.Errorf("timeout"))
+	defer cancel()
+	errChan := service.producer.Produce(ctxWithDeadline, channelTopic, []byte(notification.RecipientID), messageJson)
+	if err := <-errChan; err != nil {
 		service.logger.
 			Error().
 			Err(err).
 			Msg("Failed to produce message")
+
 		return err
 	}
 
