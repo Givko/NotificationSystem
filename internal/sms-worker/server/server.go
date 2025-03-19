@@ -53,6 +53,24 @@ func InitServer() {
 	}
 
 	metrics := metrics.NewMetrics()
+
+	consumerConfig := kafka.ConsumerConfig{
+		BootstrapServers:      configuration.Kafka.BootstrapServers,
+		GroupID:               configuration.Kafka.ConsumerConfig.GroupID,
+		Topic:                 configuration.Kafka.ConsumerConfig.EmailTopic,
+		CommitInterval:        0, // manual commit. Make configurable
+		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
+		ConsumerChannelBuffer: configuration.Kafka.ConsumerConfig.MessageChannelBuffer,
+		ConsumerWorkerPool:    configuration.Kafka.ConsumerConfig.WorkerPool,
+		DeadLetterTopic:       configuration.Kafka.ConsumerConfig.DeadLetterTopic,
+	}
+
+	emailNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)
+	if err != nil {
+		zl.Error().Err(err).Msg("Failed to create Kafka consumer")
+		panic(err)
+	}
+
 	server.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	//If using k8s we can split this into liveness and readiness probes
@@ -67,22 +85,6 @@ func InitServer() {
 	srv := &http.Server{
 		Addr:    ":" + configuration.Server.Port,
 		Handler: server,
-	}
-
-	consumerConfig := kafka.ConsumerConfig{
-		BootstrapServers:      configuration.Kafka.BootstrapServers,
-		GroupID:               configuration.Kafka.ConsumerConfig.GroupID,
-		Topic:                 configuration.Kafka.ConsumerConfig.EmailTopic,
-		CommitInterval:        0, // manual commit. Make configurable
-		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
-		ConsumerChannelBuffer: configuration.Kafka.ConsumerConfig.MessageChannelBuffer,
-		ConsumerWorkerPool:    configuration.Kafka.ConsumerConfig.WorkerPool,
-	}
-
-	emailNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)
-	if err != nil {
-		zl.Error().Err(err).Msg("Failed to create Kafka consumer")
-		panic(err)
 	}
 
 	go func() {

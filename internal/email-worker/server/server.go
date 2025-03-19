@@ -54,6 +54,23 @@ func InitServer() {
 	}
 
 	metrics := metrics.NewMetrics()
+	consumerConfig := kafka.ConsumerConfig{
+		BootstrapServers:      configuration.Kafka.BootstrapServers,
+		GroupID:               configuration.Kafka.ConsumerConfig.GroupID,
+		Topic:                 configuration.Kafka.ConsumerConfig.EmailTopic,
+		CommitInterval:        0,
+		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
+		ConsumerChannelBuffer: configuration.Kafka.ConsumerConfig.MessageChannelBuffer,
+		ConsumerWorkerPool:    configuration.Kafka.ConsumerConfig.WorkerPool,
+		DeadLetterTopic:       configuration.Kafka.ConsumerConfig.DeadLetterTopic,
+	}
+
+	emailNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)
+	if err != nil {
+		zl.Error().Err(err).Msg("Failed to create Kafka consumer")
+		panic(err)
+	}
+
 	server.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	//If using k8s we can split this into liveness and readiness probes
@@ -65,27 +82,11 @@ func InitServer() {
 			"status": "ok",
 		})
 	})
+
 	srv := &http.Server{
 		Addr:    ":" + configuration.Server.Port,
 		Handler: server,
 	}
-
-	consumerConfig := kafka.ConsumerConfig{
-		BootstrapServers:      configuration.Kafka.BootstrapServers,
-		GroupID:               "email-worker",
-		Topic:                 configuration.Kafka.ConsumerConfig.EmailTopic,
-		CommitInterval:        0,
-		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
-		ConsumerChannelBuffer: configuration.Kafka.ConsumerConfig.MessageChannelBuffer,
-		ConsumerWorkerPool:    configuration.Kafka.ConsumerConfig.WorkerPool,
-	}
-
-	emailNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)
-	if err != nil {
-		zl.Error().Err(err).Msg("Failed to create Kafka consumer")
-		panic(err)
-	}
-
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			zl.Error().Err(err).Msg("Failed to start server")
@@ -97,7 +98,8 @@ func InitServer() {
 
 	//This hanler is for demo purposes only
 	messageHandler := func(ctx context.Context, msg *kafkago.Message) error {
-		zl.Info().Msg("Received message")
+		//If we want to see the deadletterqueue in action return error here
+		zl.Info().Msg("Received email message")
 		return nil
 	}
 

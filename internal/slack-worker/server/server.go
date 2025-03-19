@@ -77,6 +77,7 @@ func InitServer() {
 		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
 		ConsumerChannelBuffer: configuration.Kafka.ConsumerConfig.MessageChannelBuffer,
 		ConsumerWorkerPool:    configuration.Kafka.ConsumerConfig.WorkerPool,
+		DeadLetterTopic:       configuration.Kafka.ConsumerConfig.DeadLetterTopic,
 	}
 
 	emailNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)
@@ -96,6 +97,7 @@ func InitServer() {
 
 	//This hanler is for demo purposes only
 	messageHandler := func(ctx context.Context, msg *kafkago.Message) error {
+		//If we want to see the deadletterqueue in action return error here
 		zl.Info().Msg("Received slack message")
 		return nil
 	}

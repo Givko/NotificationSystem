@@ -55,8 +55,9 @@ services:
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic slack-worker --partitions 1 --replication-factor 1
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic sms-worker --partitions 1 --replication-factor 1
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic email-worker --partitions 1 --replication-factor 1
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic notifications-dlq --partitions 1 --replication-factor 1
-      
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic slack-worker-dlq --partitions 1 --replication-factor 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic sms-worker-dlq --partitions 1 --replication-factor 1
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic email-worker-dlq --partitions 1 --replication-factor 1
       Verify topics were created
       echo 'Verifying topic creation:'
       kafka-topics --bootstrap-server kafka:29092 --list

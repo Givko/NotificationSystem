@@ -23,6 +23,8 @@ type KafkaConsumerConfig struct {
 	MessageChannelBuffer int    `mapstructure:"message-channel-buffer"`
 	AutoCommitInterval   int    `mapstructure:"auto-commit-interval"`
 	WorkerPool           int    `mapstructure:"worker-pool"`
+	DeadLetterTopic      string `mapstructure:"dead-letter-topic"`
+	GroupID              string `mapstructure:"group-id"`
 }
 
 type KafkaProducerConfig struct {
