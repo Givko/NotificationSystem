@@ -1,13 +1,17 @@
 server:
   port: 8080
 kafka:
-  bootstrap-servers: kafka:9092
+  bootstrap-servers: localhost:9092
   required-acks: 1
   max-retries: 3
   message-channel-buffer: 1000
+  worker-pool-size: 10
+  batch-size: 1 # this is only for testing purposes
+  batch-timeout-ms: 150
 notifications:
   channel-topics:
     slack: slack-worker
     email: email-worker
     sms: sms-worker
   dead-letter-topic: notifications-dlq
+  is-produce-async: false

@@ -20,6 +20,22 @@
             "mode": "auto",
             "program": "./email-worker/main.go",
             "env": {"ENV": "dev"}
+        },
+        {
+            "name": "Launch sms-worker",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "./sms-worker/main.go",
+            "env": {"ENV": "dev"}
+        },
+        {
+            "name": "Launch slack-worker",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "./slack-worker/main.go",
+            "env": {"ENV": "dev"}
         }
         
     ]

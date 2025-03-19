@@ -47,6 +47,9 @@ func InitServer() {
 		MaxRetries:           configuration.Kafka.MaxRetries,
 		RequiredAcks:         configuration.Kafka.RequiredAcks,
 		MessageChannelBuffer: configuration.Kafka.MessageChannelBuffer,
+		WorkerPoolSize:       configuration.Kafka.WorkerPoolSize,
+		BatchSize:            configuration.Kafka.BatchSize,
+		BatchTimeoutMs:       configuration.Kafka.BatchTimeoutMs,
 	})
 
 	if err != nil {

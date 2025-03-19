@@ -17,6 +17,9 @@ type KafkaConfig struct {
 	RequiredAcks         int    `mapstructure:"required-acks"`
 	MaxRetries           int    `mapstructure:"max-retries"`
 	MessageChannelBuffer int    `mapstructure:"message-channel-buffer"`
+	WorkerPoolSize       int    `mapstructure:"worker-pool-size"`
+	BatchSize            int    `mapstructure:"batch-size"`
+	BatchTimeoutMs       int    `mapstructure:"batch-timeout-ms"`
 }
 
 type ServerConfig struct {
@@ -26,6 +29,7 @@ type ServerConfig struct {
 type NotificationConfig struct {
 	ChannelTopics   map[string]string `mapstructure:"channel-topics"`
 	DeadLetterTopic string            `mapstructure:"dead-letter-topic"`
+	IsProduceAsync  bool              `mapstructure:"is-produce-async"`
 }
 
 // Unexported configuration variable
@@ -62,9 +66,30 @@ func updateConfig(logger zerolog.Logger) {
 	err := viper.Unmarshal(&config)
 	if err != nil {
 		logger.Err(err).Msg("Error unmarshalling kafka config")
-		panic(err)
+		return
 	}
 
+	if config.Kafka.WorkerPoolSize < 1 {
+		logger.Error().Msg("Worker pool size must be greater than 0")
+		return
+	}
+
+	if config.Kafka.MessageChannelBuffer < 1 {
+		logger.Error().Msg("Message channel buffer size must be greater than 0")
+		return
+	}
+
+	if config.Kafka.BatchSize < 1 {
+		logger.Error().Msg("Batch size must be greater than 0")
+		return
+	}
+
+	if config.Kafka.BatchTimeoutMs < 5 {
+		logger.Error().Msg("Batch timeout must be greater than 0")
+		return
+	}
+
+	//Add more validations here
 	appConfig = config
 	logger.Info().Msg("Configuration updated")
 }

@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Givko/NotificationSystem/email-worker/internal/config"
-	"github.com/Givko/NotificationSystem/email-worker/internal/infrastructure/kafka"
-	"github.com/Givko/NotificationSystem/email-worker/internal/infrastructure/metrics"
+	"github.com/Givko/NotificationSystem/slack-worker/internal/config"
+	"github.com/Givko/NotificationSystem/slack-worker/internal/infrastructure/kafka"
+	"github.com/Givko/NotificationSystem/slack-worker/internal/infrastructure/metrics"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
@@ -71,7 +71,7 @@ func InitServer() {
 
 	consumerConfig := kafka.ConsumerConfig{
 		BootstrapServers:      configuration.Kafka.BootstrapServers,
-		GroupID:               "email-worker",
+		GroupID:               configuration.Kafka.ConsumerConfig.GroupID,
 		Topic:                 configuration.Kafka.ConsumerConfig.EmailTopic,
 		CommitInterval:        0,
 		MaxProcessingRetries:  configuration.Kafka.MaxRetries,
@@ -96,7 +96,7 @@ func InitServer() {
 
 	//This hanler is for demo purposes only
 	messageHandler := func(ctx context.Context, msg *kafkago.Message) error {
-		zl.Info().Msg("Received message")
+		zl.Info().Msg("Received slack message")
 		return nil
 	}
 
