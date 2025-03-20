@@ -76,13 +76,12 @@ The system uses environment variables for configuration. Key settings:
 server:
   port: 8080
 kafka:
-  bootstrap-servers: localhost:9092
+  bootstrap-servers: localhost:9092 # for using docker use kafka:29092
 notifications:
   channel-topics:
     slack: slack-worker
     email: email-worker
     sms: sms-worker
-  dead-letter-topic: notifications-dlq
 ```
 
 ## Development
