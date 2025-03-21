@@ -70,7 +70,7 @@ curl -X POST http://localhost:8081/api/v1/notifications \
 
 ## Configuration
 
-The system uses environment variables for configuration. Key settings:
+The system uses config.yaml files for configuration(<service>/config/config.yaml). Key settings for notification orchestrator:
 
 ```yaml
 server:
