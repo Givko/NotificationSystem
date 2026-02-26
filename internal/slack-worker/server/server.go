@@ -80,7 +80,7 @@ func InitServer() {
 		DeadLetterTopic:       configuration.Kafka.ConsumerConfig.DeadLetterTopic,
 	}
 
-	emailNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)
+	slackNotificationConsumer, err := kafka.NewKafkaConsumer(zl, consumerConfig, producer, metrics)
 	if err != nil {
 		zl.Error().Err(err).Msg("Failed to create Kafka consumer")
 		panic(err)
@@ -103,8 +103,8 @@ func InitServer() {
 	}
 
 	go func() {
-		if err := emailNotificationConsumer.Start(consumerCtx, messageHandler); err != nil {
-			zl.Error().Err(err).Msg("Failed to start email notification consumer")
+		if err := slackNotificationConsumer.Start(consumerCtx, messageHandler); err != nil {
+			zl.Error().Err(err).Msg("Failed to start slack notification consumer")
 			stop()
 		}
 	}()
