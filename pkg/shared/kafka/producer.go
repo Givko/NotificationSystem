@@ -242,7 +242,7 @@ func (kp *kafkaProducer) retryMessage(ctx context.Context, failedMsg *kafka.Mess
 	var err error
 	for attempt := 1; attempt <= kp.maxRetries; attempt++ {
 		newMessage := copyMessage(failedMsg)
-		backoff := time.Duration(1 << attempt * time.Second)
+		backoff := time.Duration(1<<attempt) * time.Second
 
 		select {
 		case <-time.After(backoff):
